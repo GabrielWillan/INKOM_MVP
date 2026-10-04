@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, status  # noqa: F401
 from pydantic import BaseModel
-from services.income_service import add_income
 from services.expense_service import add_expenses
+from services.income_service import add_income
 
 app = FastAPI()
 
@@ -22,9 +22,6 @@ def post_income(income:CreateIncome):
     
     return{"id": new_id}
     
-
-
-
 #expense validator
 class CreateExpense(BaseModel):
     amount:int
@@ -43,6 +40,7 @@ def post_expense(exepense:CreateExpense):
                         )
     
     return{"id":new_id}
+
 
 
 
