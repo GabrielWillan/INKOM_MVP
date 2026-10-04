@@ -1,4 +1,4 @@
-from fastapi import FastAPI,status,HTTPException
+from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 from services.income_service import add_income
 
@@ -9,7 +9,7 @@ class CreateIncome(BaseModel):
     amount: int
     budget_id: int
     name:str
-    note: str | None
+    note: str | None = None
 
 
 @app.post("/income", status_code= status.HTTP_201_CREATED)

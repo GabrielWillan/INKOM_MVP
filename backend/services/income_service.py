@@ -7,7 +7,7 @@ def add_income(amount:int, budget_id:int, name:str, note: str | None ):
     try:
         cursor = database.execute(
         """
-        INSERT INTO income(id, amount, budget_id, name, note)
+        INSERT INTO income(amount, budget_id, name, note)
         VALUES(?,?,?,?)
         """,
         (amount, budget_id, name, note),

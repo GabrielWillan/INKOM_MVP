@@ -1,6 +1,6 @@
 import sqlite3
 
-database = sqlite3.connect("inkom.db")
+database = sqlite3.connect("database/inkom.db")
 
 
 database.execute("""
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS expenses (
                  amount INTEGER NOT NULL,
                  budget_id INTEGER NOT NULL,
                  name TEXT NOT NULL,
-                 type TEXT NOT NULL CHECK(type IN('fixed', 'flexible')),
+                 expense_type TEXT NOT NULL CHECK(type IN('fixed', 'flexible')),
                  note TEXT,
                  FOREIGN KEY(budget_id) REFERENCES budget(id)              
 )
