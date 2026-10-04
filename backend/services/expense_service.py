@@ -8,7 +8,7 @@ def add_expenses(amount:int, budget_id:int, name:str, exepense_type:str, note:st
         cursor = database.execute(
             """
             INSERT INTO expenses(amount, budget_id, name, expense_type, note)
-            VALUE(?,?,?,?,?)
+            VALUES(?,?,?,?,?)
             """,
             (amount, budget_id, name, exepense_type, note),
             )

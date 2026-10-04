@@ -1,8 +1,8 @@
 import sqlite3
 
-from fastapi import FastAPI, HTTPException, status  # noqa: F401
-from pydantic import BaseModel
-from services.budget_summary import BudgetSummary
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel, Field
+from services.budget_summary import BudgetSummary, create_budget
 from services.expense_service import add_expenses
 from services.income_service import add_income
 
@@ -45,19 +45,40 @@ def post_expense(exepense:CreateExpense):
     return{"id":new_id}
 
 
+#Budget validator
+class BudgetCreate(BaseModel):
+    month:str = Field(pattern=r"^\d{4}-\d{2}$")
+    currency:str
 
 
+#create budget
+@app.post("/createbudget", status_code=status.HTTP_201_CREATED)
+def post_budget(budget:BudgetCreate):
+    new_id = create_budget(
+        month=budget.month, 
+        currency=budget.currency
+        )
+    return {"id":new_id, "month":budget.month, "currency":budget.currency}
+    
+
+
+
+
+
+#get budget
 @app.get("/budget",status_code=status.HTTP_200_OK)
 def get_budget(budget_id: int):
-    database = sqlite3.connect("inkom.db")
+    database = sqlite3.connect("database/inkom.db")
 
     try:
-        budget = database.execute("SELECT budget FROM budget WHERE id=?", (budget_id,)).fetchone()    
+        budget = database.execute("SELECT id FROM budget WHERE id=?", (budget_id,)).fetchone()    
     finally:
-        budget.close()
+        database.close()
+    
     
     if budget == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found")
     
     summary = BudgetSummary(budget_id)
     return {"remaining": summary.calculate_budget()}
+

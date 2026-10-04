@@ -1,10 +1,10 @@
 import sqlite3
 
 
-class BudgetSummary():
+class BudgetSummary:
     def __init__(self,budget_id: int):
         self.budget_id = budget_id
-        self._database = sqlite3.connect("inkom.db")
+        self._database = sqlite3.connect("database/inkom.db")
         self.calculate = self.calculate_budget
        
     
@@ -19,7 +19,7 @@ class BudgetSummary():
             
             expense_row = self._database.execute(
                 """
-                SELECT amount FROM expenses WHERE budget_id=?
+                SELECT amount FROM expenses WHERE budget_id =?
                 """,
                 (self.budget_id,)
                 ).fetchall()
@@ -35,6 +35,25 @@ class BudgetSummary():
         budget_result = income_total - expense_total
 
         return budget_result
+
+
+
+
+def create_budget(month:str, currency: str):
+    database = sqlite3.connect("database/inkom.db")
+    try:
+     cursor = database.execute(
+        """
+        INSERT INTO budget(month, currency)
+        VALUES(?,?)
+        """,
+        (month, currency)
+        )
+     database.commit()
+     return cursor.lastrowid
+    finally:
+        database.close()
+
 
 
 
