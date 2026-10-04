@@ -3,8 +3,11 @@ export function Dashboard(){
       <section>
         <div className="dashboard-header">
             <h1>Welcome Gabriel</h1>
-            <button>edit</button>
-            <button>add</button>
+            <div className="button_shell">
+             <button>edit</button>
+             <button>add</button>
+            </div>
+
         </div>
         <div className="dashboard-shell">
             <div className="budget-container">
@@ -12,7 +15,7 @@ export function Dashboard(){
 
              </div>
              <div className="budget-chart-shell">
-                
+
              </div>
             </div>
 
