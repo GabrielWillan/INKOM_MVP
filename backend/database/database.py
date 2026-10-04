@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS income  (
                  FOREIGN KEY(budget_id) REFERENCES budget(id)            
 )
 """)
-
+    
 database.execute("""
 CREATE TABLE IF NOT EXISTS expenses (
                  id INTEGER PRIMARY KEY,
