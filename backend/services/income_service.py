@@ -1,7 +1,7 @@
 import sqlite3
 
 
-def add_income(amount:int, budget_id:int, name:str, note: str | None ):
+def add_income(amount:int, budget_id:int, name:str, note: str | None = None):
     database = sqlite3.connect("inkom.db")
 
     try:
