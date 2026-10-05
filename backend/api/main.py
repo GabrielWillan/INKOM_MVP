@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from services.budget_summary import BudgetSummary, create_budget
 from services.expense_service import add_expenses
 from services.income_service import add_income
+from services.transactions_service import fetch_transactions
 
 app = FastAPI()
 
@@ -82,3 +83,9 @@ def get_budget(budget_id: int):
     summary = BudgetSummary(budget_id)
     return {"remaining": summary.calculate_budget()}
 
+# Get transaction
+@app.get("/transactions",status_code=status.HTTP_200_FOUND)
+def get_transactions(budget_id:int):
+    income_data, expense_data = fetch_transactions(budget_id= budget_id)
+
+    return {"income": income_data, "expenses":expense_data}

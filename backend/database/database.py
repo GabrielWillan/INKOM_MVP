@@ -13,21 +13,6 @@ CREATE TABLE IF NOT EXISTS budget(
 )
 """)
 
-
-
-database.execute("""
-CREATE TABLE IF NOT EXISTS transactionss (
-     id INTEGER PRIMARY KEY,
-     amount INTEGER NOT NULL,
-     transaction_type TEXT NOT NULL CHECK(transaction_type IN ('Income', 'Expense')),
-     budget_id INTEGER NOT NULL,
-     name TEXT NOT NULL,
-     note TEXT,
-     FOREIGN KEY(budget_id) REFERENCES budget(id)
-    )
-    """)
-
-
 database.execute("""
 CREATE TABLE IF NOT EXISTS income  (
                  id INTEGER PRIMARY KEY,
