@@ -102,7 +102,7 @@ def get_budget_by_month(month: str):
     return {"id": budget[0], "month": budget[1], "currency": budget[2]}
 
 
-#get budget
+#get budget_summary
 @app.get("/budget",status_code=status.HTTP_200_OK)
 def get_budget(budget_id: int):
     database = sqlite3.connect("database/inkom.db")

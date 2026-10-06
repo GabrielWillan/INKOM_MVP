@@ -1,4 +1,5 @@
 import { Download, Plus, Search, SlidersHorizontal, WalletCards } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const spending = [
   { label: "Home", amount: "1,200 kr", height: "82%" },
@@ -17,8 +18,10 @@ const transactions = [
 ];
 
 export function Dashboard() {
-
+  const[budget, setBudget]=useState(null)
   
+
+
 
 
   return (
