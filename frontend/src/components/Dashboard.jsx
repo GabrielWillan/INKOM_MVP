@@ -1,7 +1,5 @@
 import { Download, Plus, Search, SlidersHorizontal, WalletCards } from "lucide-react";
 
-import { useState, useEffect } from "react";
-//Sample data 
 const spending = [
   { label: "Home", amount: "1,200 kr", height: "82%" },
   { label: "Food", amount: "760 kr", height: "58%" },
@@ -9,75 +7,16 @@ const spending = [
   { label: "Bills", amount: "320 kr", height: "28%" },
   { label: "Other", amount: "190 kr", height: "18%" },
 ];
+
+const transactions = [
+  { name: "Monthly salary", date: "Oct 01, 2026", type: "Income", amount: "+5,000 kr", note: "Work" },
+  { name: "Gym membership", date: "Oct 03, 2026", type: "Fixed", amount: "−200 kr", note: "Monthly" },
+  { name: "Groceries", date: "Oct 04, 2026", type: "Flexible", amount: "−460 kr", note: "Food shop" },
+  { name: "Bus pass", date: "Oct 05, 2026", type: "Fixed", amount: "−310 kr", note: "Monthly pass" },
+  { name: "Coffee", date: "Oct 05, 2026", type: "Flexible", amount: "−45 kr", note: "" },
+];
+
 export function Dashboard() {
-  const loadingSign = "Loading..."
-  const loadingCurrency = "Loading currency....."
-  const[budgetSummary, setBudgetSummary]=useState(null)
-  const[budget, setBudget]=useState(null)
-  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
-  const [transaction, settransaction]=useState({
-    income:[],
-    expenses:[]
-  })
-  useEffect(()=>{
-    const month = "2026-05"
-    async function loadDashboard() {
-      const budgetResponse = await fetch(`http://localhost:8000/budget/by-month?month=${month}`);
-      if(!budgetResponse.ok){
-        throw new Error("Something went wrong with the response")
-      };
-      const budgetData = await budgetResponse.json();
-      setBudget(budgetData);
-
-      const[summaryResponse, transactionResponse] = await Promise.all([
-        fetch(`http://localhost:8000/budget?budget_id=${budgetData.id}`),
-        fetch(`http://localhost:8000/transactions?budget_id=${budgetData.id}`),
-      ]);
-
-      const[summaryData, transactionData] = await Promise.all([
-        summaryResponse.json(),
-        transactionResponse.json(),
-      ]);
-      setBudgetSummary(summaryData);
-      settransaction(transactionData);
-      setIsLoadingTransactions(false)
-    }
-    loadDashboard().catch((error) => {
-      console.error(error)
-      setIsLoadingTransactions(false)
-    })
-  },[]);
-
-  const transactionRows = [
-    ...transaction.income.map((row) => ({
-      id: `income-${row[0]}`,
-      name: row[1],
-      amount: Number(row[2]),
-      note: row[3],
-      type: "Income",
-    })),
-    ...transaction.expenses.map((row) => ({
-      id: `expense-${row[0]}`,
-      name: row[1],
-      amount: Number(row[2]),
-      note: row[3],
-      type: row[4]?.toLowerCase() === "fixed" ? "Fixed" : "Flexible",
-    })),
-  ];
-
-  const totalIncome = transactionRows
-    .filter((item) => item.type === "Income")
-    .reduce((total, item) => total + item.amount, 0);
-  const totalFixedExpenses = transactionRows
-    .filter((item) => item.type === "Fixed")
-    .reduce((total, item) => total + item.amount, 0);
-  const totalFlexibleExpenses = transactionRows
-    .filter((item) => item.type === "Flexible")
-    .reduce((total, item) => total + item.amount, 0);
-  const formatMoney = (amount) =>
-    `${amount.toLocaleString("sv-SE")} ${budget?.currency || ""}`.trim();
-
-  
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
@@ -101,24 +40,24 @@ export function Dashboard() {
               </div>
               <span className="summary-icon" aria-hidden="true"><WalletCards size={19} /></span>
             </div>
-            <p className="remaining-amount">{budgetSummary ? `${budgetSummary.remaining}`: `${loadingSign}`} <span>{budget ? `${budget.currency}`:`${loadingCurrency}`}</span></p>
+            <p className="remaining-amount">3,985 <span>kr</span></p>
             <p className="summary-caption">You have this amount left after your recorded expenses.</p>
 
             <div className="summary-stat-grid">
               <div className="summary-stat">
                 <span className="stat-dot income-dot" />
                 <p>Income</p>
-                <strong>{isLoadingTransactions ? "Loading..." : formatMoney(totalIncome)}</strong>
+                <strong>5,000 kr</strong>
               </div>
               <div className="summary-stat">
                 <span className="stat-dot fixed-dot" />
                 <p>Fixed expenses</p>
-                <strong>{isLoadingTransactions ? "Loading..." : formatMoney(totalFixedExpenses)}</strong>
+                <strong>510 kr</strong>
               </div>
               <div className="summary-stat">
                 <span className="stat-dot flexible-dot" />
                 <p>Flexible expenses</p>
-                <strong>{isLoadingTransactions ? "Loading..." : formatMoney(totalFlexibleExpenses)}</strong>
+                <strong>505 kr</strong>
               </div>
             </div>
           </article>
@@ -168,7 +107,7 @@ export function Dashboard() {
               <thead>
                 <tr>
                   <th scope="col">Description</th>
-                  <th scope="col">Month</th>
+                  <th scope="col">Date</th>
                   <th scope="col">Type</th>
                   <th scope="col">Amount</th>
                   <th scope="col">Note</th>
@@ -176,28 +115,20 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {transactionRows.map((item) => (
-                  <tr key={item.id}>
-                    <td className="transaction-name">{item.name}</td>
-                    <td>{budget?.month || "—"}</td>
-                    <td><span className={`type-pill type-${item.type.toLowerCase()}`}>{item.type}</span></td>
-                    <td className={item.type === "Income" ? "amount-positive" : "amount-negative"}>
-                      {item.type === "Income" ? "+" : "−"}{item.amount.toLocaleString("sv-SE")} {budget?.currency || ""}
-                    </td>
-                    <td className="transaction-note">{item.note || "—"}</td>
-                    <td><button className="row-action" type="button" aria-label={`More actions for ${item.name}`}>···</button></td>
+                {transactions.map((transaction) => (
+                  <tr key={`${transaction.name}-${transaction.date}`}>
+                    <td className="transaction-name">{transaction.name}</td>
+                    <td>{transaction.date}</td>
+                    <td><span className={`type-pill type-${transaction.type.toLowerCase()}`}>{transaction.type}</span></td>
+                    <td className={transaction.type === "Income" ? "amount-positive" : "amount-negative"}>{transaction.amount}</td>
+                    <td className="transaction-note">{transaction.note || "—"}</td>
+                    <td><button className="row-action" type="button" aria-label={`More actions for ${transaction.name}`}>···</button></td>
                   </tr>
                 ))}
-                {!isLoadingTransactions && transactionRows.length === 0 && (
-                  <tr><td colSpan="6">No transactions for this budget yet.</td></tr>
-                )}
-                {isLoadingTransactions && (
-                  <tr><td colSpan="6">Loading transactions...</td></tr>
-                )}
               </tbody>
             </table>
           </div>
-          <div className="log-footer"><span>Showing {transactionRows.length} entries</span><button className="view-all-button" type="button">View all <span aria-hidden="true">→</span></button></div>
+          <div className="log-footer"><span>Showing 5 sample entries</span><button className="view-all-button" type="button">View all <span aria-hidden="true">→</span></button></div>
         </section>
       </section>
     </main>

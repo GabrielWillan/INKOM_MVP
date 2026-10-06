@@ -1,5 +1,5 @@
 import './App.css'
-import {Dashboard} from './components/dashboard/Dashboard.jsx'
+import {Dashboard} from './components/Dashboard'
 
 export default Dashboard
 

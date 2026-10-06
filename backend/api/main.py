@@ -120,6 +120,7 @@ def get_budget(budget_id: int):
     return {"remaining": summary.calculate_budget()}
 
 
+
 # Get transaction
 @app.get("/transactions",status_code=status.HTTP_200_OK)
 def get_transactions(budget_id:int):
