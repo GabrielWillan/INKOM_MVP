@@ -1,5 +1,7 @@
 import { Download, Plus, Search, SlidersHorizontal, WalletCards } from "lucide-react";
 import { useState, useEffect } from "react";
+import { fetchData } from "../api/budgetAPI";
+
 
 const spending = [
   { label: "Home", amount: "1,200 kr", height: "82%" },
@@ -18,8 +20,22 @@ const transactions = [
 ];
 
 export function Dashboard() {
-  const[budget, setBudget]=useState(null)
-  
+  const[budget, setBudget]=useState(null);
+  const[transaction, settransaction]=useState({
+    income:[],
+    expenses:[]
+  });
+  const[summary, setSummary]=useState(null)
+
+  useEffect(()=>{
+    async function loadData() {
+      const data = await fetchData("2026-01")
+      setBudget(data.budgetData)
+      settransaction(data.transactionData)
+      setSummary(data.summaryData)
+    };
+    loadData()
+  },[]);
 
 
 
@@ -47,7 +63,7 @@ export function Dashboard() {
               </div>
               <span className="summary-icon" aria-hidden="true"><WalletCards size={19} /></span>
             </div>
-            <p className="remaining-amount">3,985 <span>kr</span></p>
+            <p className="remaining-amount">{summary? `${summary.remaning}`:"LoadingData..."}<span>kr</span></p>
             <p className="summary-caption">You have this amount left after your recorded expenses.</p>
 
             <div className="summary-stat-grid">
