@@ -1,5 +1,7 @@
 import { Download, Plus, Search, SlidersHorizontal, WalletCards } from "lucide-react";
 
+import { useState, useEffect } from "react";
+//Sample data 
 const spending = [
   { label: "Home", amount: "1,200 kr", height: "82%" },
   { label: "Food", amount: "760 kr", height: "58%" },
@@ -7,7 +9,6 @@ const spending = [
   { label: "Bills", amount: "320 kr", height: "28%" },
   { label: "Other", amount: "190 kr", height: "18%" },
 ];
-
 const transactions = [
   { name: "Monthly salary", date: "Oct 01, 2026", type: "Income", amount: "+5,000 kr", note: "Work" },
   { name: "Gym membership", date: "Oct 03, 2026", type: "Fixed", amount: "−200 kr", note: "Monthly" },
@@ -16,13 +17,51 @@ const transactions = [
   { name: "Coffee", date: "Oct 05, 2026", type: "Flexible", amount: "−45 kr", note: "" },
 ];
 
+
+
+
 export function Dashboard() {
+  const loadingSign = "Loading..."
+  const loadingCurrency = "Loading currency....."
+  const[budgetSummary, setBudgetSummary]=useState(null)
+  const[budget, setBudget]=useState(null)
+  const [transaction, settransaction]=useState({
+    income:[],
+    expense:[]
+  })
+  useEffect(()=>{
+    const month = "2026-05"
+    async function loadDashboard() {
+      const budgetResponse = await fetch(`http://localhost:8000/budget/by-month?month=${month}`);
+      if(!response.ok){
+        throw new Error("Something went wrong with the response")
+      };
+      const budgetData = await budgetresponse.json();
+      setBudget(budgetData);
+
+      const[summaryResponse, transactionResponse] = await Promise.all([
+        fetch(`http://localhost:8000/budget?budget_id=${budgetData.id}`),
+        fetch(`http://localhost:8000/transactions?budget_id=${budgetData.id}`),
+      ]);
+
+      const[summaryData, transactionData] = await Promise.all([
+        summaryResponse.json(),
+        transactionResponse.json(),
+      ]);
+      setBudgetSummary(summaryData);
+      settransaction(transactionData);
+    }
+    loadDashboard().catch(console.error)
+  },[]);
+
+  
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
         <div>
           <p className="dashboard-eyebrow">Your money, in one place</p>
           <h1>Welcome Gabriel</h1>
+          <p> {budget ? '${budget.month} ${budget.currency}' : "Loading budget.."} </p>
         </div>
         <div className="button_shell">
           <button className="button button-secondary" type="button">Edit</button>
@@ -40,14 +79,14 @@ export function Dashboard() {
               </div>
               <span className="summary-icon" aria-hidden="true"><WalletCards size={19} /></span>
             </div>
-            <p className="remaining-amount">3,985 <span>kr</span></p>
+            <p className="remaining-amount"><p>{budgetSummary ? `${budgetSummary.remaning}`: `${loadingSign}`}</p><span>{budget ? `${budget.currency}`:`${loadingCurrency}`}</span></p>
             <p className="summary-caption">You have this amount left after your recorded expenses.</p>
 
             <div className="summary-stat-grid">
               <div className="summary-stat">
                 <span className="stat-dot income-dot" />
                 <p>Income</p>
-                <strong>5,000 kr</strong>
+                <strong><p>{transaction ? `${transaction.income}`:"Loading "}</p></strong>
               </div>
               <div className="summary-stat">
                 <span className="stat-dot fixed-dot" />

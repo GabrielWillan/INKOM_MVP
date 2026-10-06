@@ -80,8 +80,26 @@ def post_budget(budget:BudgetCreate):
     return {"id":new_id, "month":budget.month, "currency":budget.currency}
     
 
+# Look up a budget for a month so the frontend can find its ID on page load.
+@app.get("/budget/by-month", status_code=status.HTTP_200_OK)
+def get_budget_by_month(month: str):
+    database = sqlite3.connect("database/inkom.db")
 
+    try:
+        budget = database.execute(
+            "SELECT id, month, currency FROM budget WHERE month = ?",
+            (month,),
+        ).fetchone()
+    finally:
+        database.close()
 
+    if budget is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Budget not found for this month",
+        )
+
+    return {"id": budget[0], "month": budget[1], "currency": budget[2]}
 
 
 #get budget
@@ -100,6 +118,7 @@ def get_budget(budget_id: int):
     
     summary = BudgetSummary(budget_id)
     return {"remaining": summary.calculate_budget()}
+
 
 # Get transaction
 @app.get("/transactions",status_code=status.HTTP_200_OK)
