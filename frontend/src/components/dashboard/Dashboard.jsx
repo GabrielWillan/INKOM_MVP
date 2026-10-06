@@ -17,6 +17,10 @@ const transactions = [
 ];
 
 export function Dashboard() {
+
+  
+
+
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
