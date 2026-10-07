@@ -508,3 +508,116 @@
   .summary-stat-grid { grid-template-columns: 1fr; }
   .summary-stat { min-height: auto; }
 }
+
+.budget-add-subtitle {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.budget-add-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.budget-add-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 25px;
+}
+
+.budget-add-heading .card-eyebrow {
+  margin-bottom: 4px;
+}
+
+.budget-add-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.budget-add-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.budget-add-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.budget-add-field > span {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.budget-add-field small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.budget-add-field input,
+.budget-add-field select,
+.budget-add-field textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+  font-weight: 400;
+}
+
+.budget-add-field textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+.budget-add-field input:focus,
+.budget-add-field select:focus,
+.budget-add-field textarea:focus {
+  border-color: #bba6e1;
+  box-shadow: 0 0 0 3px rgb(112 70 200 / 9%);
+}
+
+.budget-add-field input::placeholder,
+.budget-add-field textarea::placeholder {
+  color: #aaa4b2;
+}
+
+.budget-add-note,
+.budget-add-actions {
+  grid-column: 1 / -1;
+}
+
+.budget-add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+@media (max-width: 680px) {
+  .budget-add-shell { padding: 19px; }
+  .budget-add-form { grid-template-columns: 1fr; gap: 16px; }
+  .budget-add-note,
+  .budget-add-actions { grid-column: auto; }
+  .budget-add-actions { justify-content: stretch; }
+  .budget-add-actions .button { flex: 1; }
+  .dashboard-header > .button { white-space: normal; }
+}

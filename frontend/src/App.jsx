@@ -1,13 +1,13 @@
 import './App.css'
-import {Dashboard} from './components/dashboard/Dashboard'
-import { Routes, Route } from 'react-router'
+import { Routes, Route } from "react-router";
+import { Dashboard } from "./components/dashboard/Dashboard";
+import { BudgetAdd } from "./components/dashboard/BudgetAdd";
 
-function addConfig(){
+export default function App() {
+  return (
     <Routes>
-        <Route path='add' element={""}/>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/add" element={<BudgetAdd />} />
     </Routes>
-
-};
-
-export default Dashboard
-
+  );
+}

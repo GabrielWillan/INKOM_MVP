@@ -1,8 +1,12 @@
 import { Download, Plus, Search, SlidersHorizontal, WalletCards,Loader, Rows } from "lucide-react";
 import { useState, useEffect } from "react";
 import { fetchData } from "../api/budgetAPI";
+import { useNavigate }  from "react-router";
+
 
 export function Dashboard() {
+  const navigate= useNavigate();
+
   const[budget, setBudget]=useState(null);
   const[transaction, settransaction]=useState({
     income:[],
@@ -84,7 +88,7 @@ export function Dashboard() {
         </div>
         <div className="button_shell">
           <button className="button button-secondary" type="button">Edit</button>
-          <button className="button button-primary" type="button"><Plus size={17} /> Add</button>
+          <button className="button button-primary" type="button" onClick={()=> navigate("/add")}><Plus size={17} /> Add</button>
         </div>
       </header>
 
