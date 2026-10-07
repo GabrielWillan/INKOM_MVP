@@ -2,23 +2,6 @@ import { Download, Plus, Search, SlidersHorizontal, WalletCards,Loader, Rows } f
 import { useState, useEffect } from "react";
 import { fetchData } from "../api/budgetAPI";
 
-
-const spending = [
-  { label: "NA", amount: "0", height: "0%" },
-  { label: "NA", amount: "0", height: "0%" },
-  { label: "NA", amount: "0", height: "0%" },
-  { label: "NA", amount: "0", height: "0%" },
-  { label: "NA", amount: "0", height: "0%" },
-];
-
-const transactions = [
-  { name: "Monthly salary", date: "Oct 01, 2026", type: "Income", amount: "+5,000 kr", note: "Work" },
-  { name: "Gym membership", date: "Oct 03, 2026", type: "Fixed", amount: "−200 kr", note: "Monthly" },
-  { name: "Groceries", date: "Oct 04, 2026", type: "Flexible", amount: "−460 kr", note: "Food shop" },
-  { name: "Bus pass", date: "Oct 05, 2026", type: "Fixed", amount: "−310 kr", note: "Monthly pass" },
-  { name: "Coffee", date: "Oct 05, 2026", type: "Flexible", amount: "−45 kr", note: "" },
-];
-
 export function Dashboard() {
   const[budget, setBudget]=useState(null);
   const[transaction, settransaction]=useState({
@@ -29,11 +12,11 @@ export function Dashboard() {
 
   useEffect(()=>{
     async function loadData() {
-      const data = await fetchData("2026-01")
+      const data = await fetchData("2027-01");
       setBudget(data.budgetData)
       settransaction(data.transactionData)
       setSummary(data.summaryData)
-      setIsLoading(true)
+      //setIsLoading(true)
     };
     loadData()
   },[]);
@@ -43,34 +26,51 @@ export function Dashboard() {
     ...transaction.income.map((row)=>({
       id:`income-${row[0]}`,
       name:row[1],
-      amount:Number(row[2]),
-      note: row[3],
+      month:row[2],
+      amount:Number(row[3]),
+      note: row[4],
       type:"income"
 
 
-    }),
+    })),
 
     ...transaction.expenses.map((row)=>({
       id: `expenses-${row[0]}`,
       name:row[1],
-      amount:row[2],
-      note:row[3],
-      type: row[4]?.toLowerCase() == "fixed" ? "Flexible" : "Fixed",
+      month:row[2],
+      amount:Number(row[3]),
+      note:row[4],
+      type: row[5]?.toLowerCase() == "fixed" ? "Fixed" : "Flexible",
 
-    })
+    })),
+  ];
 
-    )
-)]
 
- const incomeData = transactionRows.filter(
+
+  const expenseRows = transactionRows.filter(
+    (item) => item.type === "Fixed" || item.type === "Flexible"
+  );
+  const chartRows = expenseRows.length > 0
+    ? expenseRows
+    : Array.from({ length: 5 }, (_, index) => ({
+        id: `placeholder-${index}`,
+        name: "",
+        amount: 0,
+        isPlaceholder: true,
+      }));
+
+  const largestExpense = Math.max(
+    ...expenseRows.map((item) => item.amount),1
+  )
+
+ const TotalincomeData = transactionRows.filter(
   item => item.type == "income").reduce((total, item)=> total + item.amount, 0);
- const flexibleData = transactionRows.filter(
-  item => item.type = "Flexible").reduce((total, item)=> total + item.amount, 0);
- const fixedData = transactionRows.filter(
-  item => item.type = "Fixed").reduce((total, item)=> total + item.amount, 0);
-
-  
-
+ const TotalflexibleData = transactionRows.filter(
+  item => item.type == "Flexible").reduce((total, item)=> total + item.amount, 0);
+ const TotalfixedData = transactionRows.filter(
+  item => item.type == "Fixed").reduce((total, item)=> total + item.amount, 0);
+ const formatCurrency = (amount) => 
+  `${amount.toLocaleString('en-US')} ${budget.amount || ""}`.trim();
 
 
 
@@ -98,24 +98,24 @@ export function Dashboard() {
               </div>
               <span className="summary-icon" aria-hidden="true"><WalletCards size={19} /></span>
             </div>
-            <p className="remaining-amount">{summary? `${summary.remaning}`:"Loading Amount"}<span>{budget ? `${budget.currency}`:"Loading currency...."}</span></p>
+            <p className="remaining-amount">{summary? `${summary.remaining}`:"Loading Amount"} <span>{budget ? `${budget.currency}`:"Loading currency...."}</span></p>
             <p className="summary-caption">You have this amount left after your recorded expenses.</p>
             
             <div className="summary-stat-grid">
               <div className="summary-stat">
                 <span className="stat-dot income-dot" />
                 <p>Income</p>
-                <strong>{budget ? `${budget.amount}`: "0"}</strong>
+                <strong>{TotalincomeData} <span>{budget ? `${budget.currency}`:""}</span></strong>
               </div>
               <div className="summary-stat">
                 <span className="stat-dot fixed-dot" />
                 <p>Fixed expenses</p>
-                <strong>{budget ? `${budget.amount}`: "0"}</strong>
+                <strong>{TotalfixedData} <span>{budget ? `${budget.currency}`:""}</span></strong>
               </div> 
               <div className="summary-stat">
                 <span className="stat-dot flexible-dot" />
                 <p>Flexible expenses</p>
-                <strong>{budget ? `${budget.amount}`: "0"}</strong>
+                <strong>{TotalflexibleData} <span>{budget ? `${budget.currency}`:""}</span></strong>
               </div>
             </div>
           </article>
@@ -126,16 +126,25 @@ export function Dashboard() {
                 <p className="card-eyebrow">WHERE IT GOES</p>
                 <h2>Spending by category</h2>
               </div>
-              <span className="chart-period">This month</span>
+              <span className="chart-period">{budget ? `${budget.month}` :"Month"}</span>
             </div>
-            <div className="bar-chart" role="img" aria-label="Sample spending by category: Home 1,200 kr, Food 760 kr, Travel 480 kr, Bills 320 kr, Other 190 kr">
-              {spending.map((item, index) => (
-                <div className="bar-chart-column" key={item.label}>
-                  <span className="bar-amount">{item.amount}</span>
+            <div className="bar-chart" role="img" aria-label="Spending by expense">
+              {chartRows.map((item, index) => (
+                <div className="bar-chart-column" key={item.id}>
+                  <span className="bar-amount">{item.isPlaceholder ? "" : item.amount}</span>
+
                   <div className="bar-track">
-                    <div className={`bar-fill bar-fill-${index + 1}`} style={{ height: item.height }} />
+                    <div
+                      className={`bar-fill bar-fill-${(index % 5) + 1}`}
+                      style={{
+                        height: item.isPlaceholder
+                          ? "1%"
+                          : `${Math.max(1, (item.amount / largestExpense) * 100)}%`,
+                      }}
+                    />
                   </div>
-                  <span className="bar-label">{item.label}</span>
+
+                  <span className="bar-label">{item.name}</span>
                 </div>
               ))}
             </div>
@@ -173,20 +182,26 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {transactions.map((transaction) => (
-                  <tr key={`${transaction.name}-${transaction.date}`}>
-                    <td className="transaction-name">{}</td>
-                    <td>{}</td>
-                    <td><span className="transaction-type">{}</span></td>
-                    <td className={transaction.type === "Income" ? "amount-positive" : "amount-negative"}>{}</td>
-                    <td className="transaction-note">{}</td>
-                    <td><button className="row-action" type="button" aria-label={`More actions for ${transaction.name}`}>···</button></td>
+                {transactionRows.map((item) =>(
+                  <tr key={item.id}>
+                    <td>{item.name || "" }</td>
+                    <td>{item.month || ""}</td>
+                    <td>{item.type || ""}</td>
+                    <td>{item.amount ?? ""}</td>
+                    <td>{item.note || ""}</td>
+                    <td>...</td>
                   </tr>
-                ))}
+                )
+                )}
               </tbody>
             </table>
           </div>
-          <div className="log-footer"><span>Showing 5 sample entries</span><button className="view-all-button" type="button">View all <span aria-hidden="true">→</span></button></div>
+          <div className="log-footer">
+            <span>Showing {transactionRows.length} entries</span>
+            <button className="view-all-button" type="button">View all 
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
         </section>
       </section>
     </main>

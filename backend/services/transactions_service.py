@@ -7,8 +7,8 @@ def fetch_transactions(budget_id:int):
 
 
     try:
-        income_data = cursor.execute("SELECT id, name, amount, note FROM income WHERE budget_id = ?",(budget_id,)).fetchall()
-        expense_data = cursor.execute("SELECT id, name, amount, note, expense_type FROM expenses WHERE budget_id = ?",(budget_id,)).fetchall()
+        income_data = cursor.execute("SELECT id, name, month, amount, note FROM income WHERE budget_id = ?",(budget_id,)).fetchall()
+        expense_data = cursor.execute("SELECT id, name, month, amount, note, expense_type FROM expenses WHERE budget_id = ?",(budget_id,)).fetchall()
 
         return income_data, expense_data
     finally:

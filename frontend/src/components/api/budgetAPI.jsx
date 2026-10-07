@@ -8,7 +8,7 @@ export async function fetchData(month) {
 
     const[transactionResponse, summaryResponse]= await Promise.all([
         fetch(`http://localhost:8000/transactions/?budget_id=${budget_id}`),
-        fetch(`http://localhost:8000/buget/?budget_id=${budget_id}`),
+        fetch(`http://localhost:8000/budget/?budget_id=${budget_id}`),
     ]) 
     if(!transactionResponse.ok || !summaryResponse.ok){
         throw new Error("Could not load the budget Data")
@@ -18,7 +18,7 @@ export async function fetchData(month) {
         summaryResponse.json()
     ])
 
-    return(
+    return( 
         {budgetData, transactionData, summaryData}
     )
 }
