@@ -4,11 +4,11 @@ import { fetchData } from "../api/budgetAPI";
 
 
 const spending = [
-  { label: "Home", amount: "1,200 kr", height: "82%" },
-  { label: "Food", amount: "760 kr", height: "58%" },
-  { label: "Travel", amount: "480 kr", height: "39%" },
-  { label: "Bills", amount: "320 kr", height: "28%" },
-  { label: "Other", amount: "190 kr", height: "18%" },
+  { label: "NA", amount: "0", height: "0%" },
+  { label: "NA", amount: "0", height: "0%" },
+  { label: "NA", amount: "0", height: "0%" },
+  { label: "NA", amount: "0", height: "0%" },
+  { label: "NA", amount: "0", height: "0%" },
 ];
 
 const transactions = [
@@ -62,13 +62,17 @@ export function Dashboard() {
     )
 )]
 
+ //const transactionItem = transaction.filter(item => item.income == "income").map(item.amount == 0);
+
+
+
+
 
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
         <div>
           <p className="dashboard-eyebrow">Your money, in one place</p>
-          <h1>Welcome Gabriel</h1>
         </div>
         <div className="button_shell">
           <button className="button button-secondary" type="button">Edit</button>
@@ -88,22 +92,22 @@ export function Dashboard() {
             </div>
             <p className="remaining-amount">{summary? `${summary.remaning}`:"Loading Amount"}<span>{budget ? `${budget.currency}`:"Loading currency...."}</span></p>
             <p className="summary-caption">You have this amount left after your recorded expenses.</p>
-
+            
             <div className="summary-stat-grid">
               <div className="summary-stat">
                 <span className="stat-dot income-dot" />
                 <p>Income</p>
-                <strong>5,000 kr</strong>
+                <strong>{budget ? `${budget.amount}`: "0"}</strong>
               </div>
               <div className="summary-stat">
                 <span className="stat-dot fixed-dot" />
                 <p>Fixed expenses</p>
-                <strong>510 kr</strong>
-              </div>
+                <strong>{budget ? `${budget.amount}`: "0"}</strong>
+              </div> 
               <div className="summary-stat">
                 <span className="stat-dot flexible-dot" />
                 <p>Flexible expenses</p>
-                <strong>505 kr</strong>
+                <strong>{budget ? `${budget.amount}`: "0"}</strong>
               </div>
             </div>
           </article>
@@ -166,8 +170,8 @@ export function Dashboard() {
                     <td className="transaction-name">{}</td>
                     <td>{}</td>
                     <td><span className="transaction-type">{}</span></td>
-                    <td className={transaction.type === "Income" ? "amount-positive" : "amount-negative"}>{transaction.amount}</td>
-                    <td className="transaction-note">{transaction.note || "—"}</td>
+                    <td className={transaction.type === "Income" ? "amount-positive" : "amount-negative"}>{}</td>
+                    <td className="transaction-note">{}</td>
                     <td><button className="row-action" type="button" aria-label={`More actions for ${transaction.name}`}>···</button></td>
                   </tr>
                 ))}
