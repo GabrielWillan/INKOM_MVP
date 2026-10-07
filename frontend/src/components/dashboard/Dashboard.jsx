@@ -98,7 +98,7 @@ export function Dashboard() {
               </div>
               <span className="summary-icon" aria-hidden="true"><WalletCards size={19} /></span>
             </div>
-            <p className="remaining-amount">{summary? `${summary.remaining}`:"Loading Amount"} <span>{budget ? `${budget.currency}`:"Loading currency...."}</span></p>
+            <p className="remaining-amount">{summary? `${summary.remaining}`:"NA"} <span>{budget ? `${budget.currency}`:"NA"}</span></p>
             <p className="summary-caption">You have this amount left after your recorded expenses.</p>
             
             <div className="summary-stat-grid">
