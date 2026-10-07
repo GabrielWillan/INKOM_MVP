@@ -62,7 +62,14 @@ export function Dashboard() {
     )
 )]
 
- //const transactionItem = transaction.filter(item => item.income == "income").map(item.amount == 0);
+ const incomeData = transactionRows.filter(
+  item => item.type == "income").reduce((total, item)=> total + item.amount, 0);
+ const flexibleData = transactionRows.filter(
+  item => item.type = "Flexible").reduce((total, item)=> total + item.amount, 0);
+ const fixedData = transactionRows.filter(
+  item => item.type = "Fixed").reduce((total, item)=> total + item.amount, 0);
+
+  
 
 
 
@@ -73,6 +80,7 @@ export function Dashboard() {
       <header className="dashboard-header">
         <div>
           <p className="dashboard-eyebrow">Your money, in one place</p>
+          <h1>Welcome!</h1>
         </div>
         <div className="button_shell">
           <button className="button button-secondary" type="button">Edit</button>
