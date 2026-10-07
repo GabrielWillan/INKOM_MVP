@@ -1,4 +1,4 @@
-import { Download, Plus, Search, SlidersHorizontal, WalletCards } from "lucide-react";
+import { Download, Plus, Search, SlidersHorizontal, WalletCards,Loader, Rows } from "lucide-react";
 import { useState, useEffect } from "react";
 import { fetchData } from "../api/budgetAPI";
 
@@ -33,11 +33,34 @@ export function Dashboard() {
       setBudget(data.budgetData)
       settransaction(data.transactionData)
       setSummary(data.summaryData)
+      setIsLoading(true)
     };
     loadData()
   },[]);
 
 
+  const transactionRows = [
+    ...transaction.income.map((row)=>({
+      id:`income-${row[0]}`,
+      name:row[1],
+      amount:Number(row[2]),
+      note: row[3],
+      type:"income"
+
+
+    }),
+
+    ...transaction.expenses.map((row)=>({
+      id: `expenses-${row[0]}`,
+      name:row[1],
+      amount:row[2],
+      note:row[3],
+      type: row[4]?.toLowerCase() == "fixed" ? "Flexible" : "Fixed",
+
+    })
+
+    )
+)]
 
 
   return (
@@ -63,7 +86,7 @@ export function Dashboard() {
               </div>
               <span className="summary-icon" aria-hidden="true"><WalletCards size={19} /></span>
             </div>
-            <p className="remaining-amount">{summary? `${summary.remaning}`:"LoadingData..."}<span>kr</span></p>
+            <p className="remaining-amount">{summary? `${summary.remaning}`:"Loading Amount"}<span>{budget ? `${budget.currency}`:"Loading currency...."}</span></p>
             <p className="summary-caption">You have this amount left after your recorded expenses.</p>
 
             <div className="summary-stat-grid">
@@ -140,9 +163,9 @@ export function Dashboard() {
               <tbody>
                 {transactions.map((transaction) => (
                   <tr key={`${transaction.name}-${transaction.date}`}>
-                    <td className="transaction-name">{transaction.name}</td>
-                    <td>{transaction.date}</td>
-                    <td><span className={`type-pill type-${transaction.type.toLowerCase()}`}>{transaction.type}</span></td>
+                    <td className="transaction-name">{}</td>
+                    <td>{}</td>
+                    <td><span className="transaction-type">{}</span></td>
                     <td className={transaction.type === "Income" ? "amount-positive" : "amount-negative"}>{transaction.amount}</td>
                     <td className="transaction-note">{transaction.note || "—"}</td>
                     <td><button className="row-action" type="button" aria-label={`More actions for ${transaction.name}`}>···</button></td>
