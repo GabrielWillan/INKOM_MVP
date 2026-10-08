@@ -87,7 +87,7 @@ export function Dashboard() {
           <h1>Welcome!</h1>
         </div>
         <div className="button_shell">
-          <button className="button button-secondary" type="button" onClick={()=> navigate("/edit")}>Edit</button>
+          <button className="button button-secondary" type="button" onClick={() => navigate("/edit", { state: { month: budget?.month } })}>Edit</button>
           <button className="button button-primary" type="button" onClick={() => navigate("/createbudget")} ><Plus size={17} /> Add</button>
         </div>
       </header>

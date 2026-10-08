@@ -42,3 +42,37 @@ export async function postData(month, currency) {
     
 }
 
+export async function postTransaction({ month, amount, name, note, entryKind, expenseType }) {
+    const budgetResponse = await fetch(
+        `http://localhost:8000/budget/by-month?month=${encodeURIComponent(month)}`
+    );
+    const budgetData = await budgetResponse.json();
+    if (!budgetResponse.ok) {
+        throw new Error(budgetData.detail ?? "Could not find a budget for this month");
+    }
+
+    const endpoint = entryKind === "income" ? "income" : "expense";
+    const transactionPayload = {
+        month,
+        amount,
+        budget_id: budgetData.id,
+        name,
+        note: note || null,
+    };
+
+    if (entryKind === "expense") {
+        transactionPayload.expense_type = expenseType;
+    }
+
+    const response = await fetch(`http://localhost:8000/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transactionPayload),
+    });
+    const transactionData = await response.json();
+    if (!response.ok) {
+        throw new Error(transactionData.detail ?? "Could not save the entry");
+    }
+
+    return { budgetData, transactionData };
+}
