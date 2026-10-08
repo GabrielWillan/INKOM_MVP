@@ -1,5 +1,7 @@
 export async function fetchData(month) {
-    const dashboardResponse= await fetch(`http://localhost:8000/budget/by-month?month=${month}`);
+    const dashboardResponse = await fetch(
+        `http://localhost:8000/budget/by-month?month=${encodeURIComponent(month)}`
+    );
     if(!dashboardResponse.ok){
         throw new Error("Could not find the budget")
     };
@@ -22,3 +24,21 @@ export async function fetchData(month) {
         {budgetData, transactionData, summaryData}
     )
 }
+
+
+export async function postData(month, currency) {
+    const createBudgetResponse = await fetch('http://localhost:8000/createbudget', {
+        method:"POST",
+        headers:{"Content-type": "application/json"},
+        body:JSON.stringify({month, currency})
+    })
+
+    const createBudgetData = await createBudgetResponse.json();
+    if (!createBudgetResponse.ok) {
+        throw new Error(createBudgetData.detail ?? "Could not create budget");
+    }
+
+    return { createBudgetData };
+    
+}
+

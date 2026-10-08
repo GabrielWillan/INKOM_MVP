@@ -1,7 +1,11 @@
 import { ArrowLeft, Plus, WalletCards } from "lucide-react";
 import { useNavigate } from "react-router";
-export function BudgetAdd() {
+import { useState } from "react";
+
+
+export function BudgetEdit() {
     const navigate = useNavigate();
+    const [entryKind, setEntryKind] = useState("expense");
   return (
     <main className="dashboard-page budget-add-page">
       <header className="dashboard-header">
@@ -41,12 +45,26 @@ export function BudgetAdd() {
           </label>
 
           <label className="budget-add-field">
-            <span>Type</span>
-            <select name="type" defaultValue="fixed">
-              <option value="fixed">Fixed</option>
-              <option value="flexible">Flexible</option>
+            <span>Entry type</span>
+            <select
+              name="entry_kind"
+              value={entryKind}
+              onChange={(event) => setEntryKind(event.target.value)}
+            >
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
             </select>
           </label>
+
+          {entryKind === "expense" && (
+            <label className="budget-add-field">
+              <span>Expense type</span>
+              <select name="expense_type" defaultValue="fixed">
+                <option value="fixed">Fixed</option>
+                <option value="flexible">Flexible</option>
+              </select>
+            </label>
+          )}
 
           <label className="budget-add-field">
             <span>Currency</span>

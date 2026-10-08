@@ -1,12 +1,15 @@
-import { Download, Plus, Search, SlidersHorizontal, WalletCards,Loader, Rows } from "lucide-react";
+import { Download, Plus, Search, SlidersHorizontal, WalletCards } from "lucide-react";
 import { useState, useEffect } from "react";
 import { fetchData } from "../api/budgetAPI";
-import { useNavigate }  from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 
 export function Dashboard() {
   const navigate= useNavigate();
-
+  const location = useLocation();
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const monthToLoad = location.state?.month ?? currentMonth;
   const[budget, setBudget]=useState(null);
   const[transaction, settransaction]=useState({
     income:[],
@@ -14,16 +17,19 @@ export function Dashboard() {
   });
   const[summary, setSummary]=useState(null)
 
-  useEffect(()=>{
+  useEffect(() => {
     async function loadData() {
-      const data = await fetchData("2027-01");
-      setBudget(data.budgetData)
-      settransaction(data.transactionData)
-      setSummary(data.summaryData)
-      //setIsLoading(true)
-    };
-    loadData()
-  },[]);
+      try {
+        const data = await fetchData(monthToLoad);
+        setBudget(data.budgetData);
+        settransaction(data.transactionData);
+        setSummary(data.summaryData);
+      } catch (error) {
+        console.error("Could not load dashboard:", error);
+      }
+    }
+    loadData();
+  }, [monthToLoad]);
 
 
   const transactionRows = [
@@ -73,12 +79,6 @@ export function Dashboard() {
   item => item.type == "Flexible").reduce((total, item)=> total + item.amount, 0);
  const TotalfixedData = transactionRows.filter(
   item => item.type == "Fixed").reduce((total, item)=> total + item.amount, 0);
- const formatCurrency = (amount) => 
-  `${amount.toLocaleString('en-US')} ${budget.amount || ""}`.trim();
-
-
-
-
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
@@ -87,8 +87,8 @@ export function Dashboard() {
           <h1>Welcome!</h1>
         </div>
         <div className="button_shell">
-          <button className="button button-secondary" type="button">Edit</button>
-          <button className="button button-primary" type="button" onClick={()=> navigate("/add")}><Plus size={17} /> Add</button>
+          <button className="button button-secondary" type="button" onClick={()=> navigate("/edit")}>Edit</button>
+          <button className="button button-primary" type="button" onClick={() => navigate("/createbudget")} ><Plus size={17} /> Add</button>
         </div>
       </header>
 
