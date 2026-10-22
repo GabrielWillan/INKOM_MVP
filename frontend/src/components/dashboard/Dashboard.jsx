@@ -9,7 +9,12 @@ export function Dashboard() {
   const location = useLocation();
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const monthToLoad = location.state?.month ?? currentMonth;
+  const [selectedMonth, setSelectedMonth] = useState(
+    location.state?.month ?? currentMonth
+  );
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
+  const [pendingMonth, setPendingMonth] = useState(selectedMonth);
+  const monthToLoad = selectedMonth;
   const[budget, setBudget]=useState(null);
   const[transaction, settransaction]=useState({
     income:[],
@@ -130,7 +135,55 @@ export function Dashboard() {
                 <p className="card-eyebrow">WHERE IT GOES</p>
                 <h2>Spending by category</h2>
               </div>
-              <span className="chart-period">{budget ? `${budget.month}` :"Month"}</span>
+              <div className="chart-period-wrapper">
+                <button
+                  className="chart-period"
+                  type="button"
+                  onClick={() => {
+                    setPendingMonth(selectedMonth);
+                    setIsMonthPickerOpen((previous) => !previous);
+                  }}
+                  aria-expanded={isMonthPickerOpen}
+                >
+                  {budget ? budget.month : selectedMonth}
+                </button>
+
+                {isMonthPickerOpen && (
+                  <div className="month-picker-popup">
+                    <p className="card-eyebrow">SELECT MONTH</p>
+
+                    <input
+                      type="month"
+                      value={pendingMonth}
+                      onChange={(event) => setPendingMonth(event.target.value)}
+                      aria-label="Choose month"
+                    />
+
+                    <div className="month-picker-actions">
+                      <button
+                        type="button"
+                        className="month-picker-cancel"
+                        onClick={() => setIsMonthPickerOpen(false)}
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        type="button"
+                        className="month-picker-confirm"
+                        onClick={() => {
+                          if (pendingMonth) {
+                            setSelectedMonth(pendingMonth);
+                            setIsMonthPickerOpen(false);
+                          }
+                        }}
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="bar-chart" role="img" aria-label="Spending by expense">
               {chartRows.map((item, index) => (
