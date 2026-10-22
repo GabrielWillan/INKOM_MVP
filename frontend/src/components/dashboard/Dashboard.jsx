@@ -1,31 +1,53 @@
-import { Download, Plus, Search, SlidersHorizontal, WalletCards } from "lucide-react";
-import { useState, useEffect } from "react";
-import { fetchData } from "../api/budgetAPI";
-import { useLocation, useNavigate } from "react-router";
 
+import {
+  Download,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  WalletCards,
+} from "lucide-react";
+
+import { useState, useEffect } from "react";
+import { fetchData, DeleteIncome } from "../api/budgetAPI";
+import { useLocation, useNavigate } from "react-router";
+import { formatNumber } from "../extra_components/formatter";
 
 export function Dashboard() {
-  const navigate= useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
+
   const now = new Date();
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const currentMonth = `${now.getFullYear()}-${String(
+    now.getMonth() + 1
+  ).padStart(2, "0")}`;
+
   const [selectedMonth, setSelectedMonth] = useState(
     location.state?.month ?? currentMonth
   );
+
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [pendingMonth, setPendingMonth] = useState(selectedMonth);
+
   const monthToLoad = selectedMonth;
-  const[budget, setBudget]=useState(null);
-  const[transaction, settransaction]=useState({
-    income:[],
-    expenses:[]
+
+  const [budget, setBudget] = useState(null);
+
+  const [transaction, settransaction] = useState({
+    income: [],
+    expenses: [],
   });
-  const[summary, setSummary]=useState(null)
+
+  const [summary, setSummary] = useState(null);
+
+  // Tracks which transaction's action menu is open.
+  const [openActionId, setOpenActionId] = useState(null);
 
   useEffect(() => {
     async function loadData() {
       try {
         const data = await fetchData(monthToLoad);
+
         setBudget(data.budgetData);
         settransaction(data.transactionData);
         setSummary(data.summaryData);
@@ -33,57 +55,95 @@ export function Dashboard() {
         console.error("Could not load dashboard:", error);
       }
     }
+
     loadData();
   }, [monthToLoad]);
 
-
   const transactionRows = [
-    ...transaction.income.map((row)=>({
-      id:`income-${row[0]}`,
-      name:row[1],
-      month:row[2],
-      amount:Number(row[3]),
+    ...transaction.income.map((row) => ({
+      id: `income-${row[0]}`,
+      originalId: row[0],
+      name: row[1],
+      month: row[2],
+      amount: Number(row[3]),
       note: row[4],
-      type:"income"
-
-
+      type: "income",
     })),
 
-    ...transaction.expenses.map((row)=>({
+    ...transaction.expenses.map((row) => ({
       id: `expenses-${row[0]}`,
-      name:row[1],
-      month:row[2],
-      amount:Number(row[3]),
-      note:row[4],
-      type: row[5]?.toLowerCase() == "fixed" ? "Fixed" : "Flexible",
-
+      originalId: row[0],
+      name: row[1],
+      month: row[2],
+      amount: Number(row[3]),
+      note: row[4],
+      type: row[5]?.toLowerCase() === "fixed" ? "Fixed" : "Flexible",
     })),
   ];
-
-
 
   const expenseRows = transactionRows.filter(
     (item) => item.type === "Fixed" || item.type === "Flexible"
   );
-  const chartRows = expenseRows.length > 0
-    ? expenseRows
-    : Array.from({ length: 5 }, (_, index) => ({
-        id: `placeholder-${index}`,
-        name: "",
-        amount: 0,
-        isPlaceholder: true,
-      }));
+
+  const chartRows =
+    expenseRows.length > 0
+      ? expenseRows
+      : Array.from({ length: 5 }, (_, index) => ({
+          id: `placeholder-${index}`,
+          name: "",
+          amount: 0,
+          isPlaceholder: true,
+        }));
 
   const largestExpense = Math.max(
-    ...expenseRows.map((item) => item.amount),1
-  )
+    ...expenseRows.map((item) => item.amount),
+    1
+  );
 
- const TotalincomeData = transactionRows.filter(
-  item => item.type == "income").reduce((total, item)=> total + item.amount, 0);
- const TotalflexibleData = transactionRows.filter(
-  item => item.type == "Flexible").reduce((total, item)=> total + item.amount, 0);
- const TotalfixedData = transactionRows.filter(
-  item => item.type == "Fixed").reduce((total, item)=> total + item.amount, 0);
+  const TotalincomeData = transactionRows
+    .filter((item) => item.type === "income")
+    .reduce((total, item) => total + item.amount, 0);
+
+  const TotalflexibleData = transactionRows
+    .filter((item) => item.type === "Flexible")
+    .reduce((total, item) => total + item.amount, 0);
+
+  const TotalfixedData = transactionRows
+    .filter((item) => item.type === "Fixed")
+    .reduce((total, item) => total + item.amount, 0);
+
+  async function handleDeleteIncome(item) {
+    // DeleteIncome is the income endpoint, so do not use it for expenses.
+    if (item.type !== "income") {
+      window.alert("The DeleteIncome API can only delete income entries.");
+      setOpenActionId(null);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${item.name}"?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await DeleteIncome(item.originalId);
+
+      // Reload the dashboard after the deletion.
+      const data = await fetchData(monthToLoad);
+
+      setBudget(data.budgetData);
+      settransaction(data.transactionData);
+      setSummary(data.summaryData);
+      setOpenActionId(null);
+    } catch (error) {
+      console.error("Could not delete income:", error);
+      window.alert("Could not delete this income entry. Please try again.");
+    }
+  }
+
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
@@ -91,13 +151,32 @@ export function Dashboard() {
           <p className="dashboard-eyebrow">Your money, in one place</p>
           <h1>Welcome!</h1>
         </div>
+
         <div className="button_shell">
-          <button className="button button-secondary" type="button" onClick={() => navigate("/edit", { state: { month: budget?.month } })}>Edit</button>
-          <button className="button button-primary" type="button" onClick={() => navigate("/createbudget")} ><Plus size={17} /> Add</button>
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={() =>
+              navigate("/edit", { state: { month: budget?.month } })
+            }
+          >
+            Edit
+          </button>
+
+          <button
+            className="button button-primary"
+            type="button"
+            onClick={() => navigate("/createbudget")}
+          >
+            <Plus size={17} /> Add
+          </button>
         </div>
       </header>
 
-      <section className="dashboard-shell" aria-label="Monthly budget dashboard">
+      <section
+        className="dashboard-shell"
+        aria-label="Monthly budget dashboard"
+      >
         <div className="budget-container">
           <article className="budget-overall-shell">
             <div className="summary-topline">
@@ -105,26 +184,47 @@ export function Dashboard() {
                 <p className="card-eyebrow">MONTHLY OVERVIEW</p>
                 <h2>Remaining this month</h2>
               </div>
-              <span className="summary-icon" aria-hidden="true"><WalletCards size={19} /></span>
+
+              <span className="summary-icon" aria-hidden="true">
+                <WalletCards size={19} />
+              </span>
             </div>
-            <p className="remaining-amount">{summary? `${summary.remaining}`:"NA"} <span>{budget ? `${budget.currency}`:"NA"}</span></p>
-            <p className="summary-caption">You have this amount left after your recorded expenses.</p>
-            
+
+            <p className="remaining-amount">
+              {summary ? formatNumber(summary.remaining) : "NA"}{" "}
+              <span>{budget ? `${budget.currency}` : "NA"}</span>
+            </p>
+
+            <p className="summary-caption">
+              You have this amount left after your recorded expenses.
+            </p>
+
             <div className="summary-stat-grid">
               <div className="summary-stat">
                 <span className="stat-dot income-dot" />
                 <p>Income</p>
-                <strong>{TotalincomeData} <span>{budget ? `${budget.currency}`:""}</span></strong>
+                <strong>
+                  {formatNumber(TotalincomeData)}{" "}
+                  <span>{budget ? `${budget.currency}` : ""}</span>
+                </strong>
               </div>
+
               <div className="summary-stat">
                 <span className="stat-dot fixed-dot" />
                 <p>Fixed expenses</p>
-                <strong>{TotalfixedData} <span>{budget ? `${budget.currency}`:""}</span></strong>
-              </div> 
+                <strong>
+                  {formatNumber(TotalfixedData)}{" "}
+                  <span>{budget ? `${budget.currency}` : ""}</span>
+                </strong>
+              </div>
+
               <div className="summary-stat">
                 <span className="stat-dot flexible-dot" />
                 <p>Flexible expenses</p>
-                <strong>{TotalflexibleData} <span>{budget ? `${budget.currency}`:""}</span></strong>
+                <strong>
+                  {formatNumber(TotalflexibleData)}{" "}
+                  <span>{budget ? `${budget.currency}` : ""}</span>
+                </strong>
               </div>
             </div>
           </article>
@@ -135,6 +235,7 @@ export function Dashboard() {
                 <p className="card-eyebrow">WHERE IT GOES</p>
                 <h2>Spending by category</h2>
               </div>
+
               <div className="chart-period-wrapper">
                 <button
                   className="chart-period"
@@ -155,7 +256,9 @@ export function Dashboard() {
                     <input
                       type="month"
                       value={pendingMonth}
-                      onChange={(event) => setPendingMonth(event.target.value)}
+                      onChange={(event) =>
+                        setPendingMonth(event.target.value)
+                      }
                       aria-label="Choose month"
                     />
 
@@ -185,10 +288,17 @@ export function Dashboard() {
                 )}
               </div>
             </div>
-            <div className="bar-chart" role="img" aria-label="Spending by expense">
+
+            <div
+              className="bar-chart"
+              role="img"
+              aria-label="Spending by expense"
+            >
               {chartRows.map((item, index) => (
                 <div className="bar-chart-column" key={item.id}>
-                  <span className="bar-amount">{item.isPlaceholder ? "" : item.amount}</span>
+                  <span className="bar-amount">
+                    {item.isPlaceholder ? "" : formatNumber(item.amount)}
+                  </span>
 
                   <div className="bar-track">
                     <div
@@ -196,7 +306,10 @@ export function Dashboard() {
                       style={{
                         height: item.isPlaceholder
                           ? "1%"
-                          : `${Math.max(1, (item.amount / largestExpense) * 100)}%`,
+                          : `${Math.max(
+                              1,
+                              (item.amount / largestExpense) * 100
+                            )}%`,
                       }}
                     />
                   </div>
@@ -208,20 +321,46 @@ export function Dashboard() {
           </article>
         </div>
 
-        <section className="budget-log-shell" aria-labelledby="budget-log-title">
+        <section
+          className="budget-log-shell"
+          aria-labelledby="budget-log-title"
+        >
           <div className="log-header">
             <div className="log-title-wrap">
               <p className="card-eyebrow">YOUR ACTIVITY</p>
               <h2 id="budget-log-title">Budget log</h2>
             </div>
+
             <div className="log-actions">
-              <form className="search-form" role="search" onSubmit={(event) => event.preventDefault()}>
+              <form
+                className="search-form"
+                role="search"
+                onSubmit={(event) => event.preventDefault()}
+              >
                 <Search size={18} aria-hidden="true" />
-                <input type="search" aria-label="Search budget log" placeholder="Search transactions..." />
+                <input
+                  type="search"
+                  aria-label="Search budget log"
+                  placeholder="Search transactions..."
+                />
               </form>
+
               <div className="header-button-container">
-                <button className="button button-secondary export-button" type="button"><Download size={16} /> Export</button>
-                <button className="button button-secondary filter-button" type="button" aria-label="Filter transactions"><SlidersHorizontal size={17} /><span>Filter</span></button>
+                <button
+                  className="button button-secondary export-button"
+                  type="button"
+                >
+                  <Download size={16} /> Export
+                </button>
+
+                <button
+                  className="button button-secondary filter-button"
+                  type="button"
+                  aria-label="Filter transactions"
+                >
+                  <SlidersHorizontal size={17} />
+                  <span>Filter</span>
+                </button>
               </div>
             </div>
           </div>
@@ -238,24 +377,105 @@ export function Dashboard() {
                   <th scope="col">Actions</th>
                 </tr>
               </thead>
+
               <tbody>
-                {transactionRows.map((item) =>(
+                {transactionRows.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.name || "" }</td>
+                    <td>{item.name || ""}</td>
                     <td>{item.month || ""}</td>
                     <td>{item.type || ""}</td>
-                    <td>{item.amount ?? ""}</td>
+                    <td>
+                      {item.amount == null ? "" : formatNumber(item.amount)}
+                    </td>
                     <td>{item.note || ""}</td>
-                    <td>...</td>
+
+                    <td>
+                      <div
+                        style={{
+                          position: "relative",
+                          display: "inline-block",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="view-all-button"
+                          aria-label={`Actions for ${item.name}`}
+                          aria-expanded={openActionId === item.id}
+                          onClick={() =>
+                            setOpenActionId((currentId) =>
+                              currentId === item.id ? null : item.id
+                            )
+                          }
+                        >
+                          ...
+                        </button>
+
+                        {openActionId === item.id && (
+                          <div
+                            role="group"
+                            aria-label={`Options for ${item.name}`}
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              right: 0,
+                              zIndex: 10,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "4px",
+                              minWidth: "100px",
+                              padding: "6px",
+                              background: "var(--darkglass, #ffffff)",
+                              border: "1px solid rgba(128, 128, 128, 0.3)",
+                              borderRadius: "8px",
+                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)",
+                            }}
+                          >
+                            <button
+                              type="button"
+                              className="button button-secondary"
+                              style={{
+                                width: "100%",
+                                justifyContent: "flex-start",
+                              }}
+                              onClick={() => {
+                                setOpenActionId(null);
+                                navigate("/edit", {
+                                  state: {
+                                    month: item.month,
+                                    transaction: item,
+                                  },
+                                });
+                              }}
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              className="button button-secondary"
+                              style={{
+                                width: "100%",
+                                justifyContent: "flex-start",
+                              }}
+                              onClick={() => handleDeleteIncome(item)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
                   </tr>
-                )
-                )}
+                ))}
               </tbody>
             </table>
           </div>
+
           <div className="log-footer">
             <span>Showing {transactionRows.length} entries</span>
-            <button className="view-all-button" type="button">View all 
+
+            <button className="view-all-button" type="button">
+              View all
               <span aria-hidden="true">→</span>
             </button>
           </div>

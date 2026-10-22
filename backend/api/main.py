@@ -4,13 +4,12 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from services.budget_summary import BudgetSummary, create_budget
-from services.expense_service import add_expenses
-from services.income_service import add_income
+from services.expense_service import add_expenses, delete_expense
+from services.income_service import add_income, delete_income
 from services.transactions_service import fetch_transactions
 
 app = FastAPI()
 
-#Cors setup (request proccesor)
 origins = [
     "http://localhost:5173"
 ]
@@ -23,6 +22,12 @@ app.add_middleware(
 )
 
 
+#CustomErrors 
+class IdNotFoundError(KeyError):
+    "Raises error when id dosent exist"
+
+
+
 #income validator
 class CreateIncome(BaseModel):
     month:str = Field(pattern=r"^\d{4}-\d{2}$")
@@ -30,6 +35,31 @@ class CreateIncome(BaseModel):
     budget_id: int
     name:str
     note: str | None = None
+
+class CreateExpense(BaseModel):
+    month:str = Field(pattern=r"^\d{4}-\d{2}$")
+    amount:int
+    budget_id:int
+    name:str
+    expense_type:str
+    note:str | None = None
+
+
+class BudgetCreate(BaseModel):
+    month:str = Field(pattern=r"^\d{4}-\d{2}$")
+    currency:str
+
+
+class DeleteIncome(BaseModel):
+    income_id:int
+
+class DeleteExpenses(BaseModel):
+    expense_id:int
+
+
+
+
+
 
 @app.post("/income", status_code= status.HTTP_201_CREATED)
 def post_income(income:CreateIncome):
@@ -41,15 +71,13 @@ def post_income(income:CreateIncome):
         note=income.note)
     
     return{"id": new_id}
-    
-#expense validator
-class CreateExpense(BaseModel):
-    month:str = Field(pattern=r"^\d{4}-\d{2}$")
-    amount:int
-    budget_id:int
-    name:str
-    expense_type:str
-    note:str | None = None
+
+@app.delete("/deleteincome", status_code=status.HTTP_200_OK)
+def deleted_income(income:DeleteIncome):
+   delete_income(income.income_id)
+
+   return f"Income {income.income_id} has been deleted"
+
 
 @app.post("/expense", status_code=status.HTTP_201_CREATED)
 def post_expense(exepense:CreateExpense):
@@ -64,13 +92,17 @@ def post_expense(exepense:CreateExpense):
     return{"id":new_id}
 
 
-#Budget validator
-class BudgetCreate(BaseModel):
-    month:str = Field(pattern=r"^\d{4}-\d{2}$")
-    currency:str
+@app.delete("/deleteexpense", status_code=status.HTTP_200_OK)
+def deleted_expense(exepense:DeleteExpenses):
+   try:
+    delete_expense(exepense.expense_id)
+   except IdNotFoundError:
+       raise IdNotFoundError(f"id:{exepense.expense_id} dose not exist in the database")
+   
+   return f"Expense {exepense.expense_id} has been deleted"
 
 
-#create budget
+
 @app.post("/createbudget", status_code=status.HTTP_201_CREATED)
 def post_budget(budget:BudgetCreate):
     new_id = create_budget(
@@ -78,9 +110,9 @@ def post_budget(budget:BudgetCreate):
         currency=budget.currency
         )
     return {"id":new_id, "month":budget.month, "currency":budget.currency}
-    
 
-# Look up a budget for a month so the frontend can find its ID on page load.
+
+    
 @app.get("/budget/by-month", status_code=status.HTTP_200_OK)
 def get_budget_by_month(month: str):
     database = sqlite3.connect("database/inkom.db")
@@ -102,7 +134,6 @@ def get_budget_by_month(month: str):
     return {"id": budget[0], "month": budget[1], "currency": budget[2]}
 
 
-#get budget_summary
 @app.get("/budget",status_code=status.HTTP_200_OK)
 def get_budget(budget_id: int):
     database = sqlite3.connect("database/inkom.db")

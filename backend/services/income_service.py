@@ -18,4 +18,20 @@ def add_income(month:str, amount:int, budget_id:int, name:str, note: str | None 
         database.close()
 
 
+def delete_income(income_id:int):
+    try:
+        with sqlite3.connect("database/inkom.db") as database:
+            cursor = database.execute(
+                """
+                DELETE FROM income WHERE id = ?
+                """,
+                (income_id,)
+            )
+            database.commit()
+            return cursor
+    finally:
+        database.close()
+        
+
+
     

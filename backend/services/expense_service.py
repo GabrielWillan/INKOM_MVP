@@ -16,3 +16,18 @@ def add_expenses(month:int, amount:int, budget_id:int, name:str, exepense_type:s
         return cursor.lastrowid
     finally:
         database.close()
+
+
+def delete_expense(expense_id:int):
+    try:
+        with sqlite3.connect("database/inkom.db") as database:
+            cursor = database.execute(
+                """
+                DELETE FROM expenses WHERE id = ?
+                """,
+                (expense_id,)
+            )
+            database.commit()
+            return cursor
+    finally:
+        database.close()

@@ -76,3 +76,17 @@ export async function postTransaction({ month, amount, name, note, entryKind, ex
 
     return { budgetData, transactionData };
 }
+
+
+
+export async function DeleteIncome(income_id) {
+    const deletedIncomeResponse = await fetch('http://localhost:8000/createbudget',{
+        method:"DELETE",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(income_id)
+    })
+
+    const deletedIncomeData = await deletedIncomeResponse.json()
+
+    return{deletedIncomeData} 
+}
