@@ -105,3 +105,15 @@ export async function DeleteExpense(expense_id) {
 
     return{deletedExpenseData} 
 }
+
+export async function DeleteBudget(month) {
+    const deletedBudgetResponse = await fetch('http://localhost:8000/deletebudget',{
+        method:"DELETE",
+        headers:{"Content-Type": "application/json"},
+        body: JSON.stringify(month)
+    })
+    
+    const deletedBudgetData = await deletedBudgetResponse.json()
+    
+    return{deletedBudgetData}
+}

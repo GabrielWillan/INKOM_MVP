@@ -37,8 +37,6 @@ class BudgetSummary:
         return budget_result
 
 
-
-
 def create_budget(month:str, currency: str):
     database = sqlite3.connect("database/inkom.db")
     try:
@@ -53,9 +51,6 @@ def create_budget(month:str, currency: str):
      return cursor.lastrowid
     finally:
         database.close()
-
-
-
 
 
 def delete_budget(month:str):
