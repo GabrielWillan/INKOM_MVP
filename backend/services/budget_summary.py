@@ -58,4 +58,16 @@ def create_budget(month:str, currency: str):
 
 
 
-    
+def delete_budget(month:str):
+    database = sqlite3.connect("database/inkom.db")
+    try:
+     cursor = database.execute(
+        """
+        DELETE FROM budget WHERE month = ?
+        """,
+        (month, )
+     )
+     database.commit()
+     return cursor
+    finally:
+     database.close()

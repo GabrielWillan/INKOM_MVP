@@ -3,7 +3,7 @@ import sqlite3
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from services.budget_summary import BudgetSummary, create_budget
+from services.budget_summary import BudgetSummary, create_budget, delete_budget
 from services.expense_service import add_expenses, delete_expense
 from services.income_service import add_income, delete_income
 from services.transactions_service import fetch_transactions
@@ -25,6 +25,12 @@ app.add_middleware(
 #CustomErrors 
 class IdNotFoundError(KeyError):
     "Raises error when id dosent exist"
+
+class MonthNotFoundError(KeyError):
+    "Raises error when id dosent exist"
+
+
+
 
 
 
@@ -56,6 +62,8 @@ class DeleteIncome(BaseModel):
 class DeleteExpenses(BaseModel):
     expense_id:int
 
+class DeleteBudget(BaseModel):
+    month:str = Field(pattern=r"^\d{4}-\d{2}$")
 
 
 
@@ -111,6 +119,14 @@ def post_budget(budget:BudgetCreate):
         )
     return {"id":new_id, "month":budget.month, "currency":budget.currency}
 
+@app.delete("/deletebudget",status_code=status.HTTP_200_OK)
+def deleted_budget(budget:DeleteBudget):
+    try:
+     delete_budget(budget.month)
+    except MonthNotFoundError:
+        raise MonthNotFoundError(f"Budget:{budget.month} dose not exists in the database")
+
+
 
     
 @app.get("/budget/by-month", status_code=status.HTTP_200_OK)
@@ -149,6 +165,8 @@ def get_budget(budget_id: int):
     
     summary = BudgetSummary(budget_id)
     return {"remaining": summary.calculate_budget()}
+
+
 
 
 

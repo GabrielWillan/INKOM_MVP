@@ -80,7 +80,7 @@ export async function postTransaction({ month, amount, name, note, entryKind, ex
 
 
 export async function DeleteIncome(income_id) {
-    const deletedIncomeResponse = await fetch('http://localhost:8000/createbudget',{
+    const deletedIncomeResponse = await fetch('http://localhost:8000/deleteincome',{
         method:"DELETE",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(income_id)
@@ -89,4 +89,19 @@ export async function DeleteIncome(income_id) {
     const deletedIncomeData = await deletedIncomeResponse.json()
 
     return{deletedIncomeData} 
+}
+
+
+
+
+export async function DeleteExpense(expense_id) {
+    const deletedExpenseResponse = await fetch('http://localhost:8000/deleteexpense',{
+        method:"DELETE",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(expense_id)
+    })
+
+    const deletedExpenseData = await deletedExpenseResponse.json()
+
+    return{deletedExpenseData} 
 }
